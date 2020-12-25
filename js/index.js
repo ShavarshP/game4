@@ -1,11 +1,12 @@
 const Gamesiz = 14;
-const Coefficient = 60; //enemy appearance coefficient
+const Coefficient = 50; //the number of enemies and walls depends on this value
 
-const childsizblock = 50;
+const childsizblock = 70;
 const left = 37;
 const up = 38;
 const right = 39;
 const down = 40;
+let isRender = true;
 document.onkeydown = blockTypeMove;
 
 const createTileValues = (theSize) => {
@@ -112,57 +113,36 @@ const rabbitIsCanMove = (siz, loc, i) => {
 };
 /////
 const wolvesMove = (rabbitLocation, locations, numberOfWolves) => {
-  for (
-    let i = locations.length - 1;
-    i > locations.length - numberOfWolves - 1;
-    i--
-  ) {
+  const wolfЕnded = locations.length - numberOfWolves - 1;
+  for (let i = locations.length - 1; i > wolfЕnded; i--) {
     let futureLocation = JSON.parse(JSON.stringify(locations[i]));
-    if (
-      Math.abs(locations[i][0] - rabbitLocation[0]) >
-      Math.abs(locations[i][1] - rabbitLocation[1])
-    ) {
-      futureLocation[0] = whereToMove(
-        locations[i][0] - rabbitLocation[0],
-        locations[i][0]
-      );
-      if (isLocationsMatch(futureLocation, locations)) {
-        if (futureLocation.toString() == rabbitLocation.toString()) {
-          ending(
-            Gamesiz,
-            childsizblock,
-            "https://cs12.pikabu.ru/post_img/2020/04/02/12/1585859335122263751.jpg"
-          );
-          document.onkeydown = null;
-          return;
-          return false;
-        }
-      } else {
-        locations[i] = futureLocation;
-      }
+    futureLocation = directionMoveXY(futureLocation, rabbitLocation);
+    if (isLocationsMatch(futureLocation, locations)) {
+      israbbitCaught(futureLocation, rabbitLocation);
     } else {
-      futureLocation[1] = whereToMove(
-        locations[i][1] - rabbitLocation[1],
-        locations[i][1]
-      );
-      if (isLocationsMatch(futureLocation, locations)) {
-        if (futureLocation.toString() == rabbitLocation.toString()) {
-          ending(
-            Gamesiz,
-            childsizblock,
-            "https://cs12.pikabu.ru/post_img/2020/04/02/12/1585859335122263751.jpg"
-          );
-          document.onkeydown = null;
-          return;
-          return false;
-        }
-      } else {
-        locations[i] = futureLocation;
-      }
+      locations[i] = futureLocation;
     }
   }
   return locations;
 };
+function directionMoveXY(wolveLocation, rabbitLocation) {
+  if (
+    Math.abs(wolveLocation[0] - rabbitLocation[0]) >
+    Math.abs(wolveLocation[1] - rabbitLocation[1])
+  ) {
+    wolveLocation[0] = whereToMove(
+      wolveLocation[0] - rabbitLocation[0],
+      wolveLocation[0]
+    );
+  } else {
+    wolveLocation[1] = whereToMove(
+      wolveLocation[1] - rabbitLocation[1],
+      wolveLocation[1]
+    );
+  }
+  israbbitCaught(wolveLocation, rabbitLocation);
+  return wolveLocation;
+}
 
 function whereToMove(answer, loc) {
   if (answer > 0) {
@@ -171,6 +151,16 @@ function whereToMove(answer, loc) {
     loc += 1;
   }
   return loc;
+}
+
+async function israbbitCaught(wolveLocation, rabbitLocation) {
+  if (wolveLocation.toString() == rabbitLocation.toString()) {
+    let url =
+      "https://cs12.pikabu.ru/post_img/2020/04/02/12/1585859335122263751.jpg";
+    ending(Gamesiz, childsizblock, url);
+    document.onkeydown = null;
+    return;
+  }
 }
 
 ////////////////////////////////
@@ -208,14 +198,6 @@ const render = (tableOfGame, siz, sizblock) => {
     }
   }
 };
-function ending(siz, sizblock, url) {
-  document.getElementById("container").innerHTML = "";
-  let img = document.createElement("img");
-  img.style.width = siz * sizblock + "px";
-  img.style.height = siz * sizblock + "px";
-  img.src = url;
-  document.getElementById("container").appendChild(img);
-}
 
 ///////////////////////////////
 
@@ -226,18 +208,37 @@ let locations = createLocations(numberOfWallsWolves + 2, Gamesiz - 1); //house a
 
 const homeLocation = locations[1];
 
-const Locations = () => {
+let Locations = () => {
   const TileValues = createTileValues(Gamesiz);
   const Players = createPlayers(locations, numberOfWallsWolves / 2); //number of wolves==number of wolves
 
   const PlacePlayers = placePlayers(TileValues, Players); //place players by coordinates
-  render(PlacePlayers, Gamesiz, childsizblock);
+  if (isRender) {
+    render(PlacePlayers, Gamesiz, childsizblock);
+  }
 };
 Locations();
 
+const isRabbitatHome = (rabbitLoc, homeLoc, location) => {
+  if (rabbitLoc.toString() == homeLoc.toString()) {
+    const url ="https://image.freepik.com/free-vector/easter-day-kawaii-cute-smiling-rabbit-with-ballon-sun-clouds-happy-wood_24908-17417.jpg";
+    ending(Gamesiz, childsizblock, url);
+    document.onkeydown = null;
+    return;
+  }
+};
+const doesWolvesEatRabbit=(rabbitLoc, homeLoc, location)=>{
+  let locationWithoutrabbit=JSON.parse(JSON.stringify(location));
+  locationWithoutrabbit.shift(0);
+  if (isLocationsMatch(rabbitLoc, locationWithoutrabbit)) { //check without the location of the rabbi
+      let url = "https://cs12.pikabu.ru/post_img/2020/04/02/12/1585859335122263751.jpg";
+      ending(Gamesiz, childsizblock, url);
+      document.onkeydown = null;
+      return;
+    }
+}
 function blockTypeMove(e) {
   e = e || window.event;
-
   switch (e.keyCode) {
     case left:
       rabbitMove([-1, 0]);
@@ -261,22 +262,21 @@ const rabbitMove = (xy) => {
     futureLocation.length
   );
   if (isLocationsMatch(futureLocation, locations)) {
-    if (
-      futureLocation.toString() == homeLocation.toString() ||
-      xy.toString() == homeLocation.toString()
-    ) {
-      console.log("maladec");
-      ending(
-        Gamesiz,
-        childsizblock,
-        "https://image.freepik.com/free-vector/easter-day-kawaii-cute-smiling-rabbit-with-ballon-sun-clouds-happy-wood_24908-17417.jpg"
-      );
-      document.onkeydown = null;
-      return;
-    }
+    isRabbitatHome(futureLocation, homeLocation, locations);
   } else {
     locations = wolvesMove(locations[0], locations, numberOfWallsWolves / 2); //number of wolves==number of wolves)
     locations[0] = futureLocation;
+    doesWolvesEatRabbit(futureLocation, homeLocation, locations)
   }
   Locations();
 };
+
+function ending(siz, sizblock, url) {
+  document.getElementById("container").innerHTML = "";
+  let img = document.createElement("img");
+  img.style.width = siz * sizblock + "px";
+  img.style.height = siz * sizblock + "px";
+  img.src = url;
+  document.getElementById("container").appendChild(img);
+  isRender = false;
+}
