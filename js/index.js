@@ -1,7 +1,7 @@
-const Gamesiz = 14;
+const Gamesiz = 12;
 const Coefficient = 50; //the number of enemies and walls depends on this value
 
-const childsizblock = 70;
+const childsizblock = 75;
 const left = 37;
 const up = 38;
 const right = 39;
@@ -227,7 +227,7 @@ const isRabbitatHome = (rabbitLoc, homeLoc, location) => {
     return;
   }
 };
-const doesWolvesEatRabbit=(rabbitLoc, homeLoc, location)=>{
+const doesWolvesEatRabbit=(rabbitLoc,  location)=>{
   let locationWithoutrabbit=JSON.parse(JSON.stringify(location));
   locationWithoutrabbit.shift(0);
   if (isLocationsMatch(rabbitLoc, locationWithoutrabbit)) { //check without the location of the rabbi
@@ -266,7 +266,7 @@ const rabbitMove = (xy) => {
   } else {
     locations = wolvesMove(locations[0], locations, numberOfWallsWolves / 2); //number of wolves==number of wolves)
     locations[0] = futureLocation;
-    doesWolvesEatRabbit(futureLocation, homeLocation, locations)
+    doesWolvesEatRabbit(futureLocation,  locations)
   }
   Locations();
 };
