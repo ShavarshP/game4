@@ -1,0 +1,14 @@
+
+*{
+  margin: 0px;
+}
+#container{
+  background-color: #f3b435 ;
+  position: relative;
+
+}
+.imgfader1{
+  z-index: 1;
+  background-color: red;
+  display: flex;
+}
