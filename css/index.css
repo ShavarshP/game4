@@ -1,11 +1,14 @@
 
 *{
   margin: 0px;
+
 }
 
 #container{
   background-color: #f3b435 ;
   position: relative;
+  left: 100px;
+  top:20px
 
 }
 .imgfader1{
